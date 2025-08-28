@@ -1,8 +1,26 @@
 import { NextRequest } from 'next/server'
-import { supabaseEdge, supabaseEdgeAdmin, createCachedResponse } from '@/lib/supabase-edge'
+import { createClient } from '@supabase/supabase-js'
 
-// Enable Edge Runtime for better performance and reduced egress
-export const runtime = 'edge'
+// Use serverless runtime for better compatibility with file uploads
+export const runtime = 'nodejs'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,29 +31,25 @@ export async function GET(request: NextRequest) {
       return Response.json({ error: 'Product ID is required' }, { status: 400 })
     }
     
-    console.log(`🖼️ Edge API: Getting images for product ${productId}...`)
+    console.log(`🖼️ API: Getting images for product ${productId}...`)
     
-    const { data, error } = await supabaseEdge
+    const { data, error } = await supabase
       .from('product_images')
       .select('*')
       .eq('product_id', parseInt(productId))
       .order('display_order', { ascending: true })
 
     if (error) {
-      console.error('❌ Edge API: Error fetching product images:', error)
+      console.error('❌ API: Error fetching product images:', error)
       return Response.json({ error: 'Failed to fetch product images' }, { status: 500 })
     }
 
-    console.log(`✅ Edge API: Retrieved ${data?.length || 0} images for product ${productId}`)
+    console.log(`✅ API: Retrieved ${data?.length || 0} images for product ${productId}`)
     
-    // Return with cache headers for product images (10 minutes cache)
-    return createCachedResponse(data || [], 'productImages')
+    return Response.json(data || [])
   } catch (error) {
-    console.error('❌ Edge API: Error getting product images:', error)
-    return Response.json(
-      { error: 'Failed to get product images' },
-      { status: 500 }
-    )
+    console.error('❌ API: Error getting product images:', error)
+    return Response.json({ error: 'Failed to get product images' }, { status: 500 })
   }
 }
 
@@ -50,7 +64,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'File and product ID are required' }, { status: 400 })
     }
 
-    console.log(`🖼️ Edge API: Uploading image for product ${productId}...`)
+    console.log(`🖼️ API: Uploading image for product ${productId}...`)
 
     // Generate unique filename
     const fileExt = file.name.split('.').pop()?.toLowerCase()
@@ -61,7 +75,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabaseEdgeAdmin.storage
+    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
       .from('product-images')
       .upload(fileName, buffer, {
         contentType: file.type,
@@ -69,17 +83,17 @@ export async function POST(request: NextRequest) {
       })
 
     if (uploadError) {
-      console.error('❌ Edge API: Error uploading file:', uploadError)
+      console.error('❌ API: Error uploading file:', uploadError)
       return Response.json({ error: 'Failed to upload file' }, { status: 500 })
     }
 
     // Get public URL
-    const { data: urlData } = supabaseEdgeAdmin.storage
+    const { data: urlData } = supabaseAdmin.storage
       .from('product-images')
       .getPublicUrl(fileName)
 
     // Save metadata to database
-    const { data: dbData, error: dbError } = await supabaseEdgeAdmin
+    const { data: dbData, error: dbError } = await supabaseAdmin
       .from('product_images')
       .insert({
         product_id: parseInt(productId),
@@ -92,11 +106,11 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (dbError) {
-      console.error('❌ Edge API: Error saving to database:', dbError)
+      console.error('❌ API: Error saving to database:', dbError)
       return Response.json({ error: 'Failed to save metadata' }, { status: 500 })
     }
 
-    console.log(`✅ Edge API: Image uploaded successfully for product ${productId}`)
+    console.log(`✅ API: Image uploaded successfully for product ${productId}`)
     
     return Response.json({
       success: true,
@@ -104,10 +118,7 @@ export async function POST(request: NextRequest) {
       message: 'Product image uploaded successfully'
     })
   } catch (error) {
-    console.error('❌ Edge API: Error in product image upload:', error)
-    return Response.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('❌ API: Error uploading product image:', error)
+    return Response.json({ error: 'Failed to upload product image' }, { status: 500 })
   }
 }

@@ -1,8 +1,18 @@
 import { NextRequest } from 'next/server'
-import { supabaseEdgeAdmin } from '@/lib/supabase-edge'
+import { createClient } from '@supabase/supabase-js'
 
-// Enable Edge Runtime for better performance and reduced egress
-export const runtime = 'edge'
+// Use serverless runtime for better compatibility with file uploads
+export const runtime = 'nodejs'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +37,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabaseEdgeAdmin.storage
+    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
       .from('hero-images')
       .upload(fileName, buffer, {
         contentType: file.type,
@@ -35,12 +45,12 @@ export async function POST(request: NextRequest) {
       })
 
     if (uploadError) {
-      console.error('❌ Edge: Error uploading file:', uploadError)
+      console.error('❌ API: Error uploading file:', uploadError)
       return Response.json({ error: 'Failed to upload file' }, { status: 500 })
     }
 
     // Get public URL
-    const { data: urlData } = supabaseEdgeAdmin.storage
+    const { data: urlData } = supabaseAdmin.storage
       .from('hero-images')
       .getPublicUrl(fileName)
 
@@ -57,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     // Only add show_content if the column exists (handle backward compatibility)
     try {
-      const { data: dbData, error: dbError } = await supabaseEdgeAdmin
+      const { data: dbData, error: dbError } = await supabaseAdmin
         .from('hero_images')
         .insert([{
           ...insertData,
@@ -69,15 +79,15 @@ export async function POST(request: NextRequest) {
       if (dbError) {
         // If show_content column doesn't exist, try without it
         if (dbError.message?.includes('show_content')) {
-          console.log('⚠️ Edge: show_content column not found, inserting without it...')
-          const { data: dbData2, error: dbError2 } = await supabaseEdgeAdmin
+          console.log('⚠️ API: show_content column not found, inserting without it...')
+          const { data: dbData2, error: dbError2 } = await supabaseAdmin
             .from('hero_images')
             .insert([insertData])
             .select()
             .single()
 
           if (dbError2) {
-            console.error('❌ Edge: Error saving to database:', dbError2)
+            console.error('❌ API: Error saving to database:', dbError2)
             return Response.json({ error: 'Failed to save metadata' }, { status: 500 })
           }
           
@@ -87,7 +97,7 @@ export async function POST(request: NextRequest) {
             message: 'Hero image uploaded successfully'
           })
         } else {
-          console.error('❌ Edge: Error saving to database:', dbError)
+          console.error('❌ API: Error saving to database:', dbError)
           return Response.json({ error: 'Failed to save metadata' }, { status: 500 })
         }
       }
@@ -98,17 +108,11 @@ export async function POST(request: NextRequest) {
         message: 'Hero image uploaded successfully'
       })
     } catch (error) {
-      console.error('❌ Edge: Error in hero image upload:', error)
-      return Response.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      )
+      console.error('❌ API: Error saving to database:', error)
+      return Response.json({ error: 'Failed to save metadata' }, { status: 500 })
     }
   } catch (error) {
-    console.error('❌ Edge: Error in hero image upload:', error)
-    return Response.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('❌ API: Error uploading hero image:', error)
+    return Response.json({ error: 'Failed to upload hero image' }, { status: 500 })
   }
 }
