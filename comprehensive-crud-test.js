@@ -192,7 +192,7 @@ async function testProductImagesCRUD() {
   
   // Test 1: Check if product images API exists
   console.log('  📖 Testing GET /api/product-images...')
-  const getResponse = await testAPIEndpoint('/api/product-images')
+  const getResponse = await testAPIEndpoint('/api/product-images?productId=1')
   console.log(`  ${getResponse.success ? '✅' : '❌'} Get product images:`, getResponse.success ? 'Product images API accessible' : 'Product images API not found')
   
   // Note: Product images might be managed through the admin panel
@@ -235,9 +235,19 @@ async function testAdminPanelAccess() {
   
   let successCount = 0
   for (const route of adminRoutes) {
-    const response = await testAPIEndpoint(route)
-    console.log(`  ${response.success ? '✅' : '❌'} ${route}:`, response.success ? 'Accessible' : 'Not accessible')
-    if (response.success) successCount++
+    try {
+      const response = await fetch(`${BASE_URL}${route}`)
+      const html = await response.text()
+      
+      if (response.ok && html.includes('<html')) {
+        console.log(`  ✅ ${route}: Accessible (HTML page)`)
+        successCount++
+      } else {
+        console.log(`  ❌ ${route}: Not accessible`)
+      }
+    } catch (error) {
+      console.log(`  ❌ ${route}: Error - ${error.message}`)
+    }
   }
   
   return successCount > 0

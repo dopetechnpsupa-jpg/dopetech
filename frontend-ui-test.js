@@ -130,19 +130,12 @@ async function testAssetsAndStorage() {
   const qrCodesAPI = await testAPIFromFrontend(`${BASE_URL}/api/qr-codes`, 'QR Codes API')
   
   // Test product images API
-  const productImagesAPI = await testAPIFromFrontend(`${BASE_URL}/api/product-images`, 'Product Images API')
+  const productImagesAPI = await testAPIFromFrontend(`${BASE_URL}/api/product-images?productId=1`, 'Product Images API')
   
   return assetsAPI && qrCodesAPI && productImagesAPI
 }
 
-async function testDatabaseConnection() {
-  console.log('\n🗄️ Testing Database Connection Page...')
-  
-  // Test database test page
-  const dbTestPage = await testFrontendPage(`${BASE_URL}/test-db`, 'Database Test Page')
-  
-  return dbTestPage
-}
+
 
 async function testCRUDOperationsFromFrontend() {
   console.log('\n🔄 Testing CRUD Operations from Frontend...')
@@ -217,7 +210,7 @@ async function runFrontendUITest() {
     { name: 'Admin Panel with API', fn: testAdminPanelWithAPI },
     { name: 'Order Flow', fn: testOrderFlow },
     { name: 'Assets and Storage', fn: testAssetsAndStorage },
-    { name: 'Database Connection', fn: testDatabaseConnection },
+
     { name: 'CRUD Operations', fn: testCRUDOperationsFromFrontend }
   ]
   

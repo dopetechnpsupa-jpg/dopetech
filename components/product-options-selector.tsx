@@ -42,16 +42,7 @@ export function ProductOptionsSelector({
     return []
   })()
   
-  // Debug logging
-  console.log('🔍 ProductOptionsSelector Debug:', {
-    productId: product.id,
-    productName: product.name,
-    productColor: product.color,
-    productFeatures: product.features,
-    availableColors,
-    availableFeatures,
-    shouldShow: availableColors.length > 0 || availableFeatures.length > 0
-  })
+
 
   useEffect(() => {
     onOptionsChange(selectedColor, selectedFeatures)

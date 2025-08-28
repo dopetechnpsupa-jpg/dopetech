@@ -891,7 +891,7 @@ export default function DopeTechEcommerce() {
     return extra
   }, [currentProducts, promoOrder])
 
-  // Debug logging removed for performance
+  
 
   // Get categories from localStorage or use defaults
   // SVG Icon Component

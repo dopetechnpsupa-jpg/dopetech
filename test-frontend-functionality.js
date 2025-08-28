@@ -164,7 +164,7 @@ async function testFrontendPages() {
   const pages = [
     { path: '/', name: 'Home Page' },
     { path: '/dopetechadmin', name: 'Admin Panel' },
-    { path: '/test-db', name: 'Database Test' },
+
     { path: '/product/1', name: 'Product Detail Page' }
   ]
   

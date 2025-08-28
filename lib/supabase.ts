@@ -50,14 +50,4 @@ export const supabaseAdmin = (() => {
   return supabaseAdminInstance
 })()
 
-// Debug function to check environment variables
-export function debugSupabaseConfig() {
-  if (typeof window !== 'undefined') {
-    console.log('🔧 Supabase Config Debug:')
-    console.log('URL:', supabaseUrl)
-    console.log('Anon Key Set:', !!supabaseAnonKey)
-    console.log('Service Key Set:', !!supabaseServiceKey)
-    console.log('Client Instance:', !!supabaseInstance)
-    console.log('Admin Instance:', !!supabaseAdminInstance)
-  }
-}
+

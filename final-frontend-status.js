@@ -87,7 +87,7 @@ async function runFinalStatusTest() {
       results.pages.admin = await testPage(`${BASE_URL}/dopetechadmin`, 'Admin Panel')
   results.pages.dopetechAdmin = await testPage(`${BASE_URL}/dopetechadmin`, 'DopeTech Admin')
   results.pages.productDetail = await testPage(`${BASE_URL}/product/1`, 'Product Detail Page')
-  results.pages.dbTest = await testPage(`${BASE_URL}/test-db`, 'Database Test Page')
+
   
   // Test API Endpoints
   console.log('\n🔗 API ENDPOINTS:')
@@ -98,7 +98,7 @@ async function runFinalStatusTest() {
   results.apis.heroImages = await testEndpoint(`${BASE_URL}/api/hero-images`, 'Hero Images API')
   results.apis.assets = await testEndpoint(`${BASE_URL}/api/assets`, 'Assets API')
   results.apis.qrCodes = await testEndpoint(`${BASE_URL}/api/qr-codes`, 'QR Codes API')
-  results.apis.productImages = await testEndpoint(`${BASE_URL}/api/product-images`, 'Product Images API')
+  results.apis.productImages = await testEndpoint(`${BASE_URL}/api/product-images?productId=1`, 'Product Images API')
   
   // Test CRUD Operations
   console.log('\n🔄 CRUD OPERATIONS:')
