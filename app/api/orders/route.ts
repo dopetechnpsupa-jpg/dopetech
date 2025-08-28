@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { NextRequest } from 'next/server'
+import { supabaseEdgeAdmin, createCachedResponse } from '@/lib/supabase-edge'
+
+// Enable Edge Runtime for better performance and reduced egress
+export const runtime = 'edge'
 
 export async function OPTIONS() {
-  return new NextResponse(null, {
+  return new Response(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
@@ -19,32 +22,35 @@ export async function GET(request: NextRequest) {
     
     if (orderId) {
       // Get specific order
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await supabaseEdgeAdmin
         .from('orders')
         .select('*')
         .eq('order_id', orderId)
         .single()
 
       if (error) {
-        return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+        return Response.json({ error: 'Order not found' }, { status: 404 })
       }
 
-      return NextResponse.json({ order: data })
+      return Response.json({ order: data })
     } else {
       // Get all orders
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await supabaseEdgeAdmin
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false })
 
       if (error) {
-        return NextResponse.json({ error: 'Failed to get orders' }, { status: 500 })
+        return Response.json({ error: 'Failed to get orders' }, { status: 500 })
       }
 
-      return NextResponse.json(data || [])
+      // Cache orders for 2 minutes since they don't change frequently
+      const response = Response.json(data || [])
+      response.headers.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=30')
+      return response
     }
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -52,25 +58,25 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabaseEdgeAdmin
       .from('orders')
       .insert([body])
       .select()
       .single()
 
     if (error) {
-      return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
+      return Response.json({ error: 'Failed to create order' }, { status: 500 })
     }
 
-    return NextResponse.json({ order: data })
+    return Response.json({ order: data })
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
-    console.log('🔄 API: Updating order status...')
+    console.log('🔄 Edge API: Updating order status...')
     
     const headers = {
       'Access-Control-Allow-Origin': '*',
@@ -82,15 +88,15 @@ export async function PATCH(request: NextRequest) {
     const { orderId, order_status } = body
     
     if (!orderId || !order_status) {
-      return NextResponse.json(
+      return Response.json(
         { error: 'Missing required fields: orderId and order_status' },
         { status: 400, headers }
       )
     }
     
-    console.log(`📝 API: Updating order ${orderId} status to: ${order_status}`)
+    console.log(`📝 Edge API: Updating order ${orderId} status to: ${order_status}`)
     
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabaseEdgeAdmin
       .from('orders')
       .update({ 
         order_status,
@@ -100,31 +106,31 @@ export async function PATCH(request: NextRequest) {
       .select()
     
     if (error) {
-      console.error('❌ API: Error updating order status:', error)
-      return NextResponse.json(
+      console.error('❌ Edge API: Error updating order status:', error)
+      return Response.json(
         { error: `Failed to update order status: ${error.message}` },
         { status: 500, headers }
       )
     }
     
     if (!data || data.length === 0) {
-      return NextResponse.json(
+      return Response.json(
         { error: 'Order not found' },
         { status: 404, headers }
       )
     }
     
-    console.log('✅ API: Order status updated successfully')
+    console.log('✅ Edge API: Order status updated successfully')
     
-    return NextResponse.json({
+    return Response.json({
       success: true,
       message: 'Order status updated successfully',
       order: data[0]
     }, { headers })
     
   } catch (error) {
-    console.error('❌ API: Error updating order status:', error)
-    return NextResponse.json(
+    console.error('❌ Edge API: Error updating order status:', error)
+    return Response.json(
       { error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500, headers: {
         'Access-Control-Allow-Origin': '*',

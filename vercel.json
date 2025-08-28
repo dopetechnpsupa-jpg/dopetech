@@ -7,7 +7,8 @@
   "regions": ["iad1"],
   "functions": {
     "app/api/**/*.ts": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "runtime": "edge"
     }
   },
   "headers": [
@@ -42,6 +43,57 @@
         {
           "key": "Access-Control-Allow-Headers",
           "value": "Content-Type, Authorization"
+        }
+      ]
+    },
+    {
+      "source": "/api/products",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, stale-while-revalidate=60"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "public, max-age=300"
+        },
+        {
+          "key": "Vercel-CDN-Cache-Control",
+          "value": "public, max-age=300"
+        }
+      ]
+    },
+    {
+      "source": "/api/hero-images",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=900, stale-while-revalidate=300"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "public, max-age=900"
+        },
+        {
+          "key": "Vercel-CDN-Cache-Control",
+          "value": "public, max-age=900"
+        }
+      ]
+    },
+    {
+      "source": "/api/product-images",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=600, stale-while-revalidate=120"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "public, max-age=600"
+        },
+        {
+          "key": "Vercel-CDN-Cache-Control",
+          "value": "public, max-age=600"
         }
       ]
     }
