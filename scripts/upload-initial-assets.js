@@ -110,7 +110,7 @@ async function uploadInitialAssets() {
     }
 
     console.log('\n🎉 Initial asset upload completed!')
-    console.log('💡 You can now access the admin panel at /admin to manage assets')
+    console.log('💡 You can now access the admin panel at /dopetechadmin to manage assets')
 
   } catch (error) {
     console.error('❌ Error in uploadInitialAssets:', error)

@@ -230,11 +230,7 @@ async function testAdminPanelAccess() {
   
   // Test admin panel routes
   const adminRoutes = [
-    '/admin',
-    '/dopetechadmin',
-    '/admin/products',
-    '/admin/orders',
-    '/admin/images'
+    '/dopetechadmin'
   ]
   
   let successCount = 0

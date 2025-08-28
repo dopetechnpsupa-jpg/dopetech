@@ -109,8 +109,8 @@ async function testAdminPanel() {
   console.log('\n🔧 Testing Admin Panel...')
   
   // Test admin panel access
-  console.log('  📖 Testing GET /admin...')
-  const adminResponse = await testAPIEndpoint('/admin')
+  console.log('  📖 Testing GET /dopetechadmin...')
+  const adminResponse = await testAPIEndpoint('/dopetechadmin')
   console.log(`  ${adminResponse.success ? '✅' : '❌'} Admin panel:`, adminResponse.success ? 'Admin panel accessible' : 'Admin panel not accessible')
   
   return adminResponse.success
@@ -163,7 +163,7 @@ async function testFrontendPages() {
   
   const pages = [
     { path: '/', name: 'Home Page' },
-    { path: '/admin', name: 'Admin Panel' },
+    { path: '/dopetechadmin', name: 'Admin Panel' },
     { path: '/test-db', name: 'Database Test' },
     { path: '/product/1', name: 'Product Detail Page' }
   ]

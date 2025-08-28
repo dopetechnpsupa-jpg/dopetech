@@ -123,7 +123,7 @@ async function setupQRCodes() {
     console.log('🎉 QR Codes system setup completed successfully!')
     console.log('')
     console.log('📝 Next steps:')
-    console.log('1. Go to your admin panel at /admin')
+    console.log('1. Go to your admin panel at /dopetechadmin')
     console.log('2. Navigate to the "QR Codes" tab')
     console.log('3. Upload your payment QR code image')
     console.log('4. Set it as active')

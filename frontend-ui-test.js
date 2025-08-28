@@ -85,7 +85,7 @@ async function testAdminPanelWithAPI() {
   console.log('\n🔧 Testing Admin Panel with API Connection...')
   
   // Test admin panel page
-  const adminPage = await testFrontendPage(`${BASE_URL}/admin`, 'Admin Panel')
+  const adminPage = await testFrontendPage(`${BASE_URL}/dopetechadmin`, 'Admin Panel')
   const dopetechAdminPage = await testFrontendPage(`${BASE_URL}/dopetechadmin`, 'DopeTech Admin Panel')
   
   // Test APIs that admin panel would use

@@ -144,7 +144,7 @@ async function setupDatabase() {
     console.log('🎉 Database setup completed successfully!')
     console.log('')
     console.log('📋 Next steps:')
-    console.log('1. Visit http://localhost:3000/admin')
+    console.log('1. Visit http://localhost:3000/dopetechadmin')
     console.log('2. Login with password: admin123')
     console.log('3. Test the admin panel functionality')
     console.log('4. Upload hero images and manage products')

@@ -84,7 +84,7 @@ async function runFinalStatusTest() {
   console.log('-'.repeat(40))
   
   results.pages.home = await testPage(`${BASE_URL}/`, 'Home Page')
-  results.pages.admin = await testPage(`${BASE_URL}/admin`, 'Admin Panel')
+      results.pages.admin = await testPage(`${BASE_URL}/dopetechadmin`, 'Admin Panel')
   results.pages.dopetechAdmin = await testPage(`${BASE_URL}/dopetechadmin`, 'DopeTech Admin')
   results.pages.productDetail = await testPage(`${BASE_URL}/product/1`, 'Product Detail Page')
   results.pages.dbTest = await testPage(`${BASE_URL}/test-db`, 'Database Test Page')
